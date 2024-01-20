@@ -17,15 +17,16 @@ import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 export default class InternetSpeedMeter extends Extension {
 
   static refreshTimeInSeconds = 1;
-  static unitBase = 1024.0; // 1 GB == 1024MB or 1MB == 1024KB etc.
-  static units = ["KB/s", "MB/s", "GB/s", "TB/s", "PB/s", "EB/s"];
-  static defaultNetSpeedText = "⇅ -.-- --";
+  static unitBase = 1000.0; // 1 GB == 1000MB or 1MB == 1000KB etc.
+  static units = ["KB", "MB", "GB", "TB", "PB", "EB"];
+  static defaultNetSpeedText = "↓ -.-  ↑ -.-";
 
   prevUploadBytes = 0;
   prevDownloadBytes = 0;
   container = null;
   netSpeedLabel = null;
   timeoutId = 0;
+  roundLimit = 1;
 
   // Read total download and upload bytes from /proc/net/dev file
   getBytes() {
@@ -72,7 +73,7 @@ export default class InternetSpeedMeter extends Extension {
 
         // Show upload + download = total speed on the shell
         this.netSpeedLabel.set_text(
-          "⇅ " + this.getFormattedSpeed(uploadSpeed + downloadSpeed)
+          "↓ " + this.getFormattedSpeed(downloadSpeed) + "  ↑ " + this.getFormattedSpeed(uploadSpeed)
         );
 
         this.prevUploadBytes = uploadBytes;
@@ -94,7 +95,7 @@ export default class InternetSpeedMeter extends Extension {
       speed /= InternetSpeedMeter.unitBase;
       ++i;
     }
-    return speed.toFixed(2) + " " + InternetSpeedMeter.units[i];
+    return speed.toFixed(this.roundLimit) + " " + InternetSpeedMeter.units[i];
   }
 
   enable() {
